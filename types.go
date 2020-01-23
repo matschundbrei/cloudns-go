@@ -2,7 +2,7 @@ package main
 
 type Apiobj interface {
   create()  bool
-  read()    byte[]
+  read()    []byte
   update()  bool
   destroy() bool
 }

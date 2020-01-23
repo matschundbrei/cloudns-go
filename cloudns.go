@@ -38,6 +38,23 @@ func doRequest(url string, rtype string, params map[string]string, auth *Apiacce
   return
 }
 
+func (c *Recordset) Read() {}
+
+func (c *Recordset) Create() {}
+
+func (c *Recordset) Update() {}
+
+func (c *Recordset) Destroy() {}
+
+func (c *Zone) Read() {}
+
+func (c *Zone) Create() {}
+
+func (c *Zone) Update() {}
+
+func (c *Zone) Destroy() {}
+
+
 func checkrecord(rtype string, rvalue string) (valid bool) {}
 
 func createZone(client{} *ApiClient, domain string) (response{} map[string]string) {}
