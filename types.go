@@ -1,9 +1,21 @@
 package main
 
+type Apiobj interface {
+  create()  bool
+  read()    byte[]
+  update()  bool
+  destroy() bool
+}
+
+
 // things that you need to access the api
 type Apiaccess struct {
+  url          *string `json:"-"`
   authid       *int `json:"auth-id"`
   authpassword *string `json:"auth-password"`
+  apitimeout   *int `json:"-"`
+  apiinterval  *int `json:"-"`
+  defaultttl   *int `json:"-"`
 }
 
 // things in a records set by api
