@@ -21,47 +21,44 @@ var (
 )
 
 
-func main() {
-  configmap = getConfig()
-}
+/*
+requests by HTTP get to url
+params need to be send as 
 
-/* fetch settings from either
-    - configuration file
-    - command line variable
-    - environment variable 
+
+GET is the thing to use, but unfortunately that means we'll need to 
+1. encode the struct (see types.go) in json (to apply filter/renaming
+2. reencode it back to have only the relevant slice
+3. add it to the querystring, see https://stackoverflow.com/questions/30652577/go-doing-a-get-request-and-building-the-querystring
+
 */
-func getConfig() (*Apiaccess) {
-  return
+
+func doRequest(url string, httptype string, params []string) (response, err) {
+	return response, err := http.Request(
 }
 
-func doRequest(url string, rtype string, params map[string]string, auth *Apiaccess) (response, err) {
-  return
-}
 
-func (c *Recordset) Read() {}
+// get the needed vars from ARG, CFG, ENV (prio l2r) https://www.cloudns.net/wiki/article/45/
+func (conf *Apiaccess) Logincheck() (response, err error) {}
 
-func (c *Recordset) Create() {}
+func listRecs(conf *Apiaccess, searchstring string) (response, err error) {}
 
-func (c *Recordset) Update() {}
+func listZones(conf *Apiaccess, searchstring string) (response, err error) {}
 
-func (c *Recordset) Destroy() {}
+// CRUD functions for our structs in types.go
+func (record **Recordset) Read(auth *Apiaccess) (response map{}, err error) {}
 
-func (c *Zone) Read() {}
+func (record **Recordset) Create(auth *Apiaccess) (err error) {}
 
-func (c *Zone) Create() {}
+func (record **Recordset) Update(auth *Apiaccess) (err error) {}
 
-func (c *Zone) Update() {}
+func (record **Recordset) Destroy(auth *Apiaccess) (err error) {}
 
-func (c *Zone) Destroy() {}
+func (zone **Zone) Read(auth *Apiaccess) (response something?, err error) {}
 
+func (zone **Zone) Create(auth *Apiaccess) (err error) {}
 
-func checkrecord(rtype string, rvalue string) (valid bool) {}
+func (zone **Zone) Update(auth *Apiaccess) (err error) {}
 
-func createZone(client{} *ApiClient, domain string) (response{} map[string]string) {}
-func updateZone(client{} *ApiClient, domain string) (response{} map[string]string) {}
-func readZone(client{} *ApiClient, domain string) (response{} map[string]string, zone *ZoneRecord) {}
-func destroyZone(client{} *ApiClient, domain string) (response{} map[string]string) {}
-func createRecord(client{} *ApiClient, domain string, rname string, rtype string, rvalue string) (response{} map[string]string) {}
-func updateRecord(client{} *ApiClient, domain string, rname string, rtype string, rvalue string) (response{} map[string]string) {}
-func readRecord(client{} *ApiClient, domain string, rname string, rtype string, rvalue string) (response{} map[string]string, record *Record) {}
-func destroyRecord(client{} *ApiClient, domain string, rname string, rtype string, rvalue string) (response{} map[string]string) {}
+func (zone **Zone) Destroy(auth *Apiaccess) (err error) {}
+
