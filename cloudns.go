@@ -117,12 +117,20 @@ func (zone Zone) mkparams(conf Apiaccess) map[string]string {
 }
 
 /*
-// get the needed vars from ARG, CFG, ENV (prio l2r) https://www.cloudns.net/wiki/article/45/
+// get the needed vars from ENV, ARG, CFG (prio l2r) https://www.cloudns.net/wiki/article/45/
 func fetchconfig() (conf Apiaccess) {
 
 }
 
 func (conf Apiaccess) Logincheck() (response resty.Response, err error) {
+	const path = "/dns/login.json"
+}
+
+func (conf Apiaccess) Availablettl() (response resty.Response, err error) {
+	const path = "/dns/login.json"
+}
+
+func (conf Apiaccess) Availabletype() (response resty.Response, err error) {
 	const path = "/dns/login.json"
 }
 
