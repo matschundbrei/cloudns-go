@@ -2,31 +2,22 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/go-resty/resty/v2"
-	//"os"
+	"os"
 	"strconv"
 	"strings"
 )
 
+// this is the communicated api endpoint
 const (
 	apiurl = "https://api.cloudns.net"
 )
 
-/*
-requests by HTTP get to url
-params need to be send as
-
-
-GET is the thing to use, but unfortunately that means we'll need to
-1. encode the struct (see types.go) in json (to apply filter/renaming
-2. reencode it back to have only the relevant slice
-3. add it to the querystring, see https://stackoverflow.com/questions/30652577/go-doing-a-get-request-and-building-the-querystring
-
-*/
-
-func doreq(path string, params map[string]string) (response *resty.Response, err error) {
+// generic request handler, up until now, it seems GET is sufficient
+func doreq(path string, params map[string]string) (*resty.Response, error) {
 	fullurl := strings.Join([]string{apiurl, path}, "")
 	client := resty.New()
 	return client.R().SetQueryParams(params).SetHeader("Accept", "application/json").Get(fullurl)
@@ -45,7 +36,6 @@ func flattenjson(b []byte) map[string]string {
 	var params map[string]string
 	params = make(map[string]string)
 	for k, v := range m {
-		spew.Printf("current vals:\nk: %#+v\nv: %#+v\n", k, v)
 		switch vt := v.(type) {
 		case string:
 			params[k] = vt
@@ -71,11 +61,11 @@ func flattenjson(b []byte) map[string]string {
 					var fltu float64 = ut
 					params[newk] = strconv.Itoa(int(fltu))
 				default:
-					spew.Printf("error handling type for key %#+v, heres the var: %#+v", newk, ut)
+					spew.Printf("error handling type for key %#+v, heres the value: %#+v\n", newk, ut)
 				}
 			}
 		default:
-			spew.Printf("error handling type for key %#+v, heres the var: %#+v", k, vt)
+			spew.Printf("error handling type for key %#+v, heres the value: %#+v\n", k, vt)
 		}
 	}
 	return params
@@ -116,31 +106,77 @@ func (zone Zone) mkparams(conf Apiaccess) map[string]string {
 	return params
 }
 
-/*
 // get the needed vars from ENV, ARG, CFG (prio l2r) https://www.cloudns.net/wiki/article/45/
-func fetchconfig() (conf Apiaccess) {
-
+func fetchconfig() Apiaccess {
+	conf := Apiaccess{}
+	// ENV
+	// for convinience, we're using the same ones as go-acme/lego
+	envid, err := strconv.ParseInt(os.Getenv("CLOUDNS_AUTH_ID"), 0, 32)
+	if err != nil {
+		spew.Printf("error converting %#+v to an int64\n", os.Getenv("CLOUDNS_AUTH_ID"))
+	} else {
+		conf.Authid = int(envid)
+	}
+	conf.Authpassword = os.Getenv("CLOUDNS_AUTH_PASSWORD")
+	// look for args
+	var argid int
+	var argpw string
+	flag.IntVar(&argid, "authid", 0, "Your ClouDNS HTTP API ID")
+	flag.StringVar(&argpw, "authpw", "", "Your ClouDNS HTTP API Password")
+	flag.Parse()
+	if argid > 0 {
+		conf.Authid = argid
+	}
+	if argpw != "" {
+		conf.Authpassword = argpw
+	}
+	// todo config from file
+	return conf
 }
 
-func (conf Apiaccess) Logincheck() (response resty.Response, err error) {
+// check if the credentials work
+func (conf Apiaccess) Logincheck() (*resty.Response, error) {
 	const path = "/dns/login.json"
+	params := conf.mkparams()
+	return doreq(path, params)
 }
 
-func (conf Apiaccess) Availablettl() (response resty.Response, err error) {
-	const path = "/dns/login.json"
+// get the available values for TTL
+func (conf Apiaccess) Availablettl() (*resty.Response, error) {
+	const path = "/dns/get-available-ttl.json"
+	params := conf.mkparams()
+	return doreq(path, params)
 }
 
-func (conf Apiaccess) Availabletype() (response resty.Response, err error) {
-	const path = "/dns/login.json"
+func (conf Apiaccess) Availabletype() (*resty.Response, error) {
+	const path = "/dns/get-available-record-types.json"
+	params := conf.mkparams()
+	params["zone-type"] = "domain"
+	return doreq(path, params)
 }
 
-func listRecs(conf Apiaccess, searchstring string) (response resty.Response, err error) {
+func (conf Apiaccess) lsrec(domain string) (*resty.Response, error) {
 	const path = "/dns/records.json"
+	params := conf.mkparams()
+	params["domain-name"] = domain
+	return doreq(path, params)
 }
 
-func listZones(conf Apiaccess, searchstring string) (response resty.Response, err error) {
+func (conf Apiaccess) lszone(searchstring string) (*resty.Response, error) {
 	const path = "/dns/list-zones.json"
+	params := conf.mkparams()
+	if searchstring != "" {
+		params["search"] = searchstring
+	}
+	//TODO:
+	//this needs to recurse through pages
+	//currently we just take a limit of 100 domains into account
+	params["page"] = "1"
+	params["rows-per-page"] = "100"
+	return doreq(path, params)
 }
+
+/*
 
 // CRUD functions for our structs in types.go
 func (record Recordset) Read(auth *Apiaccess) (response resty.Response, err error) {
@@ -180,17 +216,30 @@ func (zone Zone) Destroy(auth *Apiaccess) (err error) {
 
 func main() {
 	fmt.Println("we start now")
-	foo := Apiaccess{
-		Authid:       4711,
-		Authpassword: "example-password",
-	}
+	foo := fetchconfig()
 
 	spew.Printf("this is foo now: %#+v \n", foo)
 	//bar := Recordset{}
 	//zap := Zone{}
 
-	thisparms := foo.mkparams()
-	fmt.Println(thisparms)
-	spew.Printf("params? %#+v", thisparms)
-
+	req, err := foo.Logincheck()
+	if err == nil {
+		spew.Printf("#1 Logincheck: API says: %#+v \n", req)
+	}
+	req2, err2 := foo.Availablettl()
+	if err2 == nil {
+		spew.Printf("#2 Available TTLS: API says: %#+v \n", req2)
+	}
+	req3, err3 := foo.Availabletype()
+	if err3 == nil {
+		spew.Printf("#3 Available Types: API says: %#+v \n", req3)
+	}
+	req4, err4 := foo.lsrec("sta.net")
+	if err4 == nil {
+		spew.Printf("#4 Listing Records for Domain 'sta.net': %#+v \n", req4)
+	}
+	req5, err5 := foo.lszone("")
+	if err5 == nil {
+		spew.Printf("#5 Listing Domains with empty searchstring: %#+v \n", req5)
+	}
 }
