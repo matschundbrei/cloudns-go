@@ -9,9 +9,9 @@ type Apiaccess struct {
 // things in a records set by api
 type Recordset struct {
 	Rtype          string `json:"record-type"`
-	Ttl            int
-	Host           string
-	Record         string
+	Ttl            int    `json:"ttl"`
+	Host           string `json:"host"`
+	Record         string `json:"record"`
 	Priority       int    `json:",omitempty"`
 	Weight         int    `json:",omitempty"`
 	Port           int    `json:",omitempty"`
@@ -36,6 +36,6 @@ type Recordset struct {
 type Zone struct {
 	Domain string   `json:"domain-name"`
 	Ztype  string   `json:"zone-type"`
-	Ns     []string `json:",omitempty"`
+	Ns     []string `json:"ns,omitempty"`
 	Master string   `json:"master-ip,omitempty"`
 }
