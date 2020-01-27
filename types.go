@@ -6,6 +6,29 @@ type Apiaccess struct {
 	Authpassword string `json:"auth-password"`
 }
 
+// Apierr we should be able to Unmarshal this, if there was an API error, see https://www.cloudns.net/wiki/article/45/
+type Apierr struct {
+	Status string `json:"status"`
+	Desc   string `json:"statusDescription"`
+}
+
+// Zone is the internal representation of a zone
+type Zone struct {
+	Domain string   `json:"domain-name"`
+	Ztype  string   `json:"zone-type"`
+	Ns     []string `json:"ns,omitempty"`
+}
+
+// Record is the internal representation of a record
+type Record struct {
+	ID     string `json:"id"`
+	Domain string `json:"domain-name"`
+	Host   string `json:"host"`
+	Rtype  string `json:"record-type"`
+	TTL    int    `json:"ttl"`
+	Record string `json:"record"`
+}
+
 // Createrec create a record, see https://www.cloudns.net/wiki/article/58/
 type Createrec struct {
 	Authid         int    `json:"auth-id"`
@@ -15,20 +38,20 @@ type Createrec struct {
 	TTL            int    `json:"ttl"`
 	Host           string `json:"host"`
 	Record         string `json:"record"`
-	Priority       int    `json:",omitempty"`
-	Weight         int    `json:",omitempty"`
-	Port           int    `json:",omitempty"`
-	Frame          int    `json:",omitempty"`
+	Priority       int    `json:"priority,omitempty"`
+	Weight         int    `json:"weight,omitempty"`
+	Port           int    `json:"port,omitempty"`
+	Frame          int    `json:"frame,omitempty"`
 	FrameTitle     string `json:"frame-title,omitempty"`
 	FrameKeywords  string `json:"frame-keywords,omitempty"`
 	FrameDesc      string `json:"frame-description,omitempty"`
 	SavePath       int    `json:"save-path,omitempty"`
 	RedirectType   int    `json:"redirect-type,omitempty"`
-	Mail           string `json:",omitempty"`
-	Txt            string `json:",omitempty"`
-	Algorithm      string `json:",omitempty"`
-	Fptype         string `json:",omitempty"`
-	Status         int    `json:",omitempty"`
+	Mail           string `json:"mail,omitempty"`
+	Txt            string `json:"txt,omitempty"`
+	Algorithm      string `json:"algorithm,omitempty"`
+	Fptype         string `json:"fptype,omitempty"`
+	Status         int    `json:"status,omitempty"`
 	GeodnsLocation int    `json:"geodns-location,omitempty"`
 	CaaFlag        int    `json:"caa_flag,omitempty"`
 	CaaType        string `json:"caa_type,omitempty"`
@@ -88,4 +111,11 @@ type zonelist struct {
 	Hits         int    `json:"rows-per-page"`
 	Search       string `json:"search,omitempty"`
 	Gid          int    `json:"group-id,omitempty"`
+}
+
+//zone update/destroy struct, see https://www.cloudns.net/wiki/article/135/ or https://www.cloudns.net/wiki/article/49/
+type zupdate struct {
+	Authid       int    `json:"auth-id"`
+	Authpassword string `json:"auth-password"`
+	Domain       string `json:"domain-name"`
 }
