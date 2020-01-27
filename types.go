@@ -1,15 +1,18 @@
 package main
 
-// things that you need to access the api
+// Apiaccess ClouDNS API Credentials, see https://www.cloudns.net/wiki/article/42/
 type Apiaccess struct {
 	Authid       int    `json:"auth-id"`
 	Authpassword string `json:"auth-password"`
 }
 
-// things in a records set by api
-type Recordset struct {
+// Createrec create a record, see https://www.cloudns.net/wiki/article/58/
+type Createrec struct {
+	Authid         int    `json:"auth-id"`
+	Authpassword   string `json:"auth-password"`
+	Domain         string `json:"domain-name"`
 	Rtype          string `json:"record-type"`
-	Ttl            int    `json:"ttl"`
+	TTL            int    `json:"ttl"`
 	Host           string `json:"host"`
 	Record         string `json:"record"`
 	Priority       int    `json:",omitempty"`
@@ -32,10 +35,57 @@ type Recordset struct {
 	CaaValue       string `json:"caa_value,omitempty"`
 }
 
-// things in a zone set by api
-type Zone struct {
-	Domain string   `json:"domain-name"`
-	Ztype  string   `json:"zone-type"`
-	Ns     []string `json:"ns,omitempty"`
-	Master string   `json:"master-ip,omitempty"`
+// Returnrec to Unmarshal returned records, see https://www.cloudns.net/wiki/article/57/
+type Returnrec struct {
+	ID       string `json:"id"`
+	Rtype    string `json:"type"`
+	Host     string `json:"host"`
+	Record   string `json:"record"`
+	Dynurl   int    `json:"dynamicurl_status"`
+	Failover string `json:"failover"`
+	TTL      string `json:"ttl"`
+	Dtatus   int    `json:"status"`
+}
+
+// Createzone create a zone, see https://www.cloudns.net/wiki/article/48/
+type Createzone struct {
+	Authid       int      `json:"auth-id"`
+	Authpassword string   `json:"auth-password"`
+	Domain       string   `json:"domain-name"`
+	Ztype        string   `json:"zone-type"`
+	Ns           []string `json:"ns,omitempty"`
+	Master       string   `json:"master-ip,omitempty"`
+}
+
+//Returnzone to Unmarchal returned zones, see https://www.cloudns.net/wiki/article/50/
+type Returnzone struct {
+	Domain string `json:"domain-name"`
+	Ztype  string `json:"zone-type"`
+	Master string `json:"master-ip,omitempty"` // ??? not sure if this was in, check in lsdom
+}
+
+//types lists available types from api, see https://www.cloudns.net/wiki/article/157/
+type rectypes struct {
+	Authid       int    `json:"auth-id"`
+	Authpassword string `json:"auth-password"`
+	Ztype        string `json:"zone-type"`
+}
+
+//reclist lists records for a domain, see https://www.cloudns.net/wiki/article/57/
+type reclist struct {
+	Authid       int    `json:"auth-id"`
+	Authpassword string `json:"auth-password"`
+	Domain       string `json:"domain-name"`
+	Host         string `json:"host,omitempty"`
+	Rtype        string `json:"type,omitempty"`
+}
+
+//zonelist lists zones, see https://www.cloudns.net/wiki/article/50/
+type zonelist struct {
+	Authid       int    `json:"auth-id"`
+	Authpassword string `json:"auth-password"`
+	Page         int    `json:"page"`
+	Hits         int    `json:"rows-per-page"`
+	Search       string `json:"search,omitempty"`
+	Gid          int    `json:"group-id,omitempty"`
 }
