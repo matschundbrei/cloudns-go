@@ -56,6 +56,41 @@ type Createrec struct {
 	CaaFlag        int    `json:"caa_flag,omitempty"`
 	CaaType        string `json:"caa_type,omitempty"`
 	CaaValue       string `json:"caa_value,omitempty"`
+	Tusage         string `json:"tlsa_usage,omitempty"`
+	Tselector      string `json:"tlsa_selector,omitempty"`
+	Tmatchtype     string `json:"tlsa_matching_type,omitempty"`
+}
+
+// Updaterec is the alternative record struct, used here https://www.cloudns.net/wiki/article/60/
+type Updaterec struct {
+	Authid         int    `json:"auth-id"`
+	Authpassword   string `json:"auth-password"`
+	Domain         string `json:"domain-name"`
+	Rid            int    `json:"record-id"`
+	TTL            int    `json:"ttl"`
+	Host           string `json:"host"`
+	Record         string `json:"record"`
+	Priority       int    `json:"priority,omitempty"`
+	Weight         int    `json:"weight,omitempty"`
+	Port           int    `json:"port,omitempty"`
+	Frame          int    `json:"frame,omitempty"`
+	FrameTitle     string `json:"frame-title,omitempty"`
+	FrameKeywords  string `json:"frame-keywords,omitempty"`
+	FrameDesc      string `json:"frame-description,omitempty"`
+	SavePath       int    `json:"save-path,omitempty"`
+	RedirectType   int    `json:"redirect-type,omitempty"`
+	Mail           string `json:"mail,omitempty"`
+	Txt            string `json:"txt,omitempty"`
+	Algorithm      string `json:"algorithm,omitempty"`
+	Fptype         string `json:"fptype,omitempty"`
+	Status         int    `json:"status,omitempty"`
+	GeodnsLocation int    `json:"geodns-location,omitempty"`
+	CaaFlag        int    `json:"caa_flag,omitempty"`
+	CaaType        string `json:"caa_type,omitempty"`
+	CaaValue       string `json:"caa_value,omitempty"`
+	Tusage         string `json:"tlsa_usage,omitempty"`
+	Tselector      string `json:"tlsa_selector,omitempty"`
+	Tmatchtype     string `json:"tlsa_matching_type,omitempty"`
 }
 
 // Returnrec to Unmarshal returned records, see https://www.cloudns.net/wiki/article/57/
