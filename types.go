@@ -6,20 +6,21 @@ type Apiaccess struct {
 	Authpassword string `json:"auth-password"`
 }
 
-// Apierr we should be able to Unmarshal this, if there was an API error, see https://www.cloudns.net/wiki/article/45/
+// Apierr we should be able to json.Unmarshal this from an *resty.Response.Body(),
+// if there was an API error, see https://www.cloudns.net/wiki/article/45/
 type Apierr struct {
 	Status string `json:"status"`
 	Desc   string `json:"statusDescription"`
 }
 
-// Zone is the internal representation of a zone
+// Zone is the external representation of a zone
 type Zone struct {
 	Domain string   `json:"domain-name"`
 	Ztype  string   `json:"zone-type"`
 	Ns     []string `json:"ns,omitempty"`
 }
 
-// Record is the internal representation of a record
+// Record is the external representation of a record
 type Record struct {
 	ID     string `json:"id"`
 	Domain string `json:"domain-name"`

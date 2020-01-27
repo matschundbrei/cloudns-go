@@ -13,7 +13,15 @@ the public crud should *always* return the same struct (_self?) and errors if an
 create: this is only complex for records, since ClouDNS allows for duplicate records of the same type in the same host
 so, we need to grapple the ID from the create request and add it to the struct returning
 
+read: needs to be done by listing (either recs or zones)
 
+update: can only be done for records (domains will err)
+
+destroy: functions already present
+
+we need also:
+- an init function for the module read this: https://blog.golang.org/using-go-modules
+- a proper cli for the binary this looks promising: https://github.com/urfave/cli/blob/master/docs/v2/manual.md
 
 */
 
