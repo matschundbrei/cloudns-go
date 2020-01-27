@@ -1,14 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
-	"github.com/go-resty/resty/v2"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/davecgh/go-spew/spew"
+	"github.com/go-resty/resty/v2"
 )
 
 // this is the communicated api endpoint
@@ -16,94 +16,14 @@ const (
 	apiurl = "https://api.cloudns.net"
 )
 
-// generic request handler, up until now, it seems GET is sufficient
-func doreq(path string, params map[string]string) (*resty.Response, error) {
+// this is how we will do requests
+func apireq(path string, body interface{}) (*resty.Response, error) {
 	fullurl := strings.Join([]string{apiurl, path}, "")
 	client := resty.New()
-	return client.R().SetQueryParams(params).SetHeader("Accept", "application/json").Get(fullurl)
-}
-
-// a very fugly thing to flatten json to a map
-// this is mostly stolen from https://blog.golang.org/json-and-go
-// and then Knuth and I banged our heads against it until it worked
-func flattenjson(b []byte) map[string]string {
-	var tmp interface{}
-	err2 := json.Unmarshal(b, &tmp)
-	if err2 != nil {
-		spew.Printf("error in json.Unmarshal: %#+v \n", err2)
-	}
-	m := tmp.(map[string]interface{})
-	var params map[string]string
-	params = make(map[string]string)
-	for k, v := range m {
-		switch vt := v.(type) {
-		case string:
-			params[k] = vt
-		case int:
-			params[k] = strconv.Itoa(vt)
-		case bool:
-			params[k] = strconv.FormatBool(vt)
-		case float64: // this case is exceptionally shitty, but it works here
-			var flt float64 = vt
-			params[k] = strconv.Itoa(int(flt))
-		case []interface{}: // if the layer is an array
-			for i, u := range vt {
-				numstr := strconv.Itoa(i)
-				newk := strings.Join([]string{k, "[", numstr, "]"}, "")
-				switch ut := u.(type) {
-				case string:
-					params[newk] = ut
-				case int:
-					params[newk] = strconv.Itoa(ut)
-				case bool:
-					params[newk] = strconv.FormatBool(ut)
-				case float64:
-					var fltu float64 = ut
-					params[newk] = strconv.Itoa(int(fltu))
-				default:
-					spew.Printf("error handling type for key %#+v, heres the value: %#+v\n", newk, ut)
-				}
-			}
-		default:
-			spew.Printf("error handling type for key %#+v, heres the value: %#+v\n", k, vt)
-		}
-	}
-	return params
-}
-
-// helper functions to create params as flattened map
-func (conf Apiaccess) mkparams() map[string]string {
-	b, err := json.Marshal(conf)
-	if err != nil {
-		spew.Printf("error in first json.Marshal: %#+v \n", err)
-	}
-	return flattenjson(b)
-}
-
-func (record Recordset) mkparams(conf Apiaccess) map[string]string {
-	params := conf.mkparams()
-	b, err := json.Marshal(record)
-	if err != nil {
-		spew.Printf("error in first json.Marshal: %#+v \n", err)
-	}
-	tmpmap := flattenjson(b)
-	for k, v := range tmpmap {
-		params[k] = v
-	}
-	return params
-}
-
-func (zone Zone) mkparams(conf Apiaccess) map[string]string {
-	params := conf.mkparams()
-	b, err := json.Marshal(zone)
-	if err != nil {
-		spew.Printf("error in first json.Marshal: %#+v \n", err)
-	}
-	tmpmap := flattenjson(b)
-	for k, v := range tmpmap {
-		params[k] = v
-	}
-	return params
+	client.R().SetHeader("Content-Type", "application/json")
+	client.R().SetHeader("Accept", "application/json")
+	client.R().SetHeader("User-Agent", "github.com/sta-travel/cloudns-go")
+	return client.R().SetBody(body).Post(fullurl)
 }
 
 // get the needed vars from ENV, ARG, CFG (prio l2r) https://www.cloudns.net/wiki/article/45/
@@ -134,82 +54,84 @@ func fetchconfig() Apiaccess {
 	return conf
 }
 
-// check if the credentials work
-func (conf Apiaccess) Logincheck() (*resty.Response, error) {
+// Logincheck checks if the credentials work
+func (c Apiaccess) Logincheck() (*resty.Response, error) {
 	const path = "/dns/login.json"
-	params := conf.mkparams()
-	return doreq(path, params)
+	return apireq(path, c)
 }
 
-// get the available values for TTL
-func (conf Apiaccess) Availablettl() (*resty.Response, error) {
+// Availablettl gets the currently available TTL values
+func (c Apiaccess) Availablettl() (*resty.Response, error) {
 	const path = "/dns/get-available-ttl.json"
-	params := conf.mkparams()
-	return doreq(path, params)
+	return apireq(path, c)
 }
 
-func (conf Apiaccess) Availabletype() (*resty.Response, error) {
+// Availabletype gets the currently available Record-Types
+func (r rectypes) Availabletype() (*resty.Response, error) {
 	const path = "/dns/get-available-record-types.json"
-	params := conf.mkparams()
-	params["zone-type"] = "domain"
-	return doreq(path, params)
+	return apireq(path, r)
 }
 
-func (conf Apiaccess) lsrec(domain string) (*resty.Response, error) {
+// list records
+func (r reclist) lsrec() (*resty.Response, error) {
 	const path = "/dns/records.json"
-	params := conf.mkparams()
-	params["domain-name"] = domain
-	return doreq(path, params)
+	return apireq(path, r)
 }
 
-func (conf Apiaccess) lszone(searchstring string) (*resty.Response, error) {
+// list zones
+func (z zonelist) lszone() (*resty.Response, error) {
 	const path = "/dns/list-zones.json"
-	params := conf.mkparams()
-	if searchstring != "" {
-		params["search"] = searchstring
-	}
-	//TODO:
-	//this needs to recurse through pages
-	//currently we just take a limit of 100 domains into account
-	params["page"] = "1"
-	params["rows-per-page"] = "100"
-	return doreq(path, params)
+	return apireq(path, z)
 }
 
 /*
-
 // CRUD functions for our structs in types.go
-func (record Recordset) Read(auth *Apiaccess) (response resty.Response, err error) {
+func (r Createrec) Read() (map[string]Returnrec, error) {
 	// utilise list function ...
+
+	resp, err := auth.lsrec(r.Domain, r.Host, record.Rtype)
+	var unmres map[string]Returnrec
+	var unmerr error
+	if err == nil {
+		unmerr = json.Unmarshal(resp.Body(), &unmres)
+		if unmerr != nil {
+			spew.Printf("wow, there's an Unmarshal error: %#+v \n %#+v \n", unmerr, string(resp.Body()))
+			return unmres, unmerr
+		}
+	} else {
+		spew.Printf("wow, there's a request error! %#+v \n%#+v \n", err, resp)
+		return unmres, err
+	}
+	return unmres, unmerr
 }
 
-func (record Recordset) Create(auth *Apiaccess) (err error) {
+func (record Createrec) Create(auth *Apiaccess) (*resty.Response, error) {
 	const path = "/dns/add-record.json"
 }
 
-func (record Recordset) Update(auth *Apiaccess) (err error) {
+func (record Createrec) Update(auth *Apiaccess) (*resty.Response, error) {
 	const path = "/dns/mod-record.json"
 }
 
-func (record Recordset) Destroy(auth *Apiaccess) (err error) {
+func (record Createrec) Destroy(auth *Apiaccess) (*resty.Response, error) {
 	const path = "/dns/delete-record.json"
 }
 
-func (zone Zone) Read(auth *Apiaccess) (response resty.Response, err error) {
+func (zone Createzone) Read(auth *Apiaccess) (*resty.Response, error) {
 	// utilise list function ...
 }
 
-func (zone Zone) Create(auth *Apiaccess) (err error) {
+func (zone Createzone) Create(auth *Apiaccess) (*resty.Response, error) {
 	const path = "/dns/register.json"
 }
 
-func (zone Zone) Update(auth *Apiaccess) (err error) {
+func (zone Createzone) Update(auth *Apiaccess) (*resty.Response, error) {
 	// not sure what this does ...
 	// see https://www.cloudns.net/wiki/article/135/
 	const path = "/dns/update-zone.json"
 }
 
-func (zone Zone) Destroy(auth *Apiaccess) (err error) {
+func (zone Createzone) Destroy(auth *Apiaccess) (*resty.Response, error) {
 	const path = "/dns/delete.json"
 }
 */
@@ -219,27 +141,23 @@ func main() {
 	foo := fetchconfig()
 
 	spew.Printf("this is foo now: %#+v \n", foo)
-	//bar := Recordset{}
-	//zap := Zone{}
+	// bar := Createrec{
+	// 	Domain: "sta.net",
+	// 	Rtype:  "A",
+	// 	Host:   "cr",
+	// }
+	//zap := Createzone{}
+	//thingy, _ := bar.Read(foo)
 
-	req, err := foo.Logincheck()
-	if err == nil {
-		spew.Printf("#1 Logincheck: API says: %#+v \n", req)
+	thingy := zonelist{
+		Authid:       foo.Authid,
+		Authpassword: foo.Authpassword,
+		Page:         1,
+		Hits:         100,
 	}
-	req2, err2 := foo.Availablettl()
-	if err2 == nil {
-		spew.Printf("#2 Available TTLS: API says: %#+v \n", req2)
-	}
-	req3, err3 := foo.Availabletype()
-	if err3 == nil {
-		spew.Printf("#3 Available Types: API says: %#+v \n", req3)
-	}
-	req4, err4 := foo.lsrec("sta.net")
-	if err4 == nil {
-		spew.Printf("#4 Listing Records for Domain 'sta.net': %#+v \n", req4)
-	}
-	req5, err5 := foo.lszone("")
-	if err5 == nil {
-		spew.Printf("#5 Listing Domains with empty searchstring: %#+v \n", req5)
-	}
+
+	resp, _ := thingy.lszone()
+
+	spew.Printf("here's what we got: %#+v \n", resp)
+
 }
