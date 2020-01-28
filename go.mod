@@ -1,4 +1,4 @@
-module main
+module github.com/sta-travel/cloudns-go
 
 go 1.13
 
