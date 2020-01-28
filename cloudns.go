@@ -1,6 +1,8 @@
 // Package cloudns public structs/functions
 package cloudns
 
+import "encoding/json"
+
 // Apiaccess ClouDNS API Credentials, see https://www.cloudns.net/wiki/article/42/
 type Apiaccess struct {
 	Authid       int    `json:"auth-id,omitempty"`
@@ -14,6 +16,24 @@ type Zone struct {
 	Domain string   `json:"domain-name"`
 	Ztype  string   `json:"zone-type"`
 	Ns     []string `json:"ns,omitempty"`
+}
+
+// Listzones returns all zones (max: 100)
+func (a Apiaccess) Listzones() ([]Zone, error) {
+	zls := zonelist{
+		Authid:       a.Authid,
+		Subauthid:    a.Subauthid,
+		Authpassword: a.Authpassword,
+		Page:         1,
+		Hits:         100,
+	}
+	resp, err := zls.lszone()
+	var rz []Zone
+	if err == nil {
+		err2 := json.Unmarshal(resp.Body(), &rz)
+		return rz, err2
+	}
+	return rz, err
 }
 
 // List returns all records from a zone
