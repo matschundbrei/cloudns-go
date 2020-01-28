@@ -3,7 +3,8 @@ package cloudns
 
 // Apiaccess ClouDNS API Credentials, see https://www.cloudns.net/wiki/article/42/
 type Apiaccess struct {
-	Authid       int    `json:"auth-id"`
+	Authid       int    `json:"auth-id,omitempty"`
+	Subauthid    int    `json:"sub-auth-id,omitempty"`
 	Authpassword string `json:"auth-password"`
 }
 
