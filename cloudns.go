@@ -1,32 +1,5 @@
-// Copyright (c) 2020 Jan Kapellen (jan.kapellen@statravel.com), All rights reserved.
-// cloudns-go source code and usage is governed by a MIT style
-// license that can be found in the LICENSE file.
+// Package cloudns public structs/functions
 package cloudns
-
-/*
-Good morning, Jan, this is Jan from yesterday, I have a few tasks for you:
-
-- make all current functions/structs private
-- make public CRUD functions for those higher lvl structs (Record, Zone), that use the private ones
-- declare api error type for {"status":"Failed","statusDescription":".... (implemented already: checkapierr)
-
-
-the public crud should *always* return the same struct (_self?) and errors if any
-
-create: this is only complex for records, since ClouDNS allows for duplicate records of the same type in the same host
-so, we need to grapple the ID from the create request and add it to the struct returning
-
-read: needs to be done by listing (either recs or zones)
-
-update: can only be done for records (domains will err)
-
-destroy: functions already present
-
-we need also:
-- an init function for the module read this: https://blog.golang.org/using-go-modules
-- a proper cli for the binary this looks promising: https://github.com/urfave/cli/blob/master/docs/v2/manual.md
-
-*/
 
 // Apiaccess ClouDNS API Credentials, see https://www.cloudns.net/wiki/article/42/
 type Apiaccess struct {
@@ -42,28 +15,37 @@ type Zone struct {
 	Ns     []string `json:"ns,omitempty"`
 }
 
+// List returns all records from a zone
+func (z Zone) List(a *Apiaccess) ([]Record, error) {
+	var err error = nil
+	r := Record{}
+	ra := []Record{r}
+	return ra, err
+}
+
 // Create a new zone
-func (z Zone) Create(a *Apiaccess) Zone, error {
-	err := nil
+func (z Zone) Create(a *Apiaccess) (Zone, error) {
+	var err error = nil
+
 	return z, err
 }
 
 // Read a zone
-func (z Zone) Read(a *Apiaccess) Zone, error {
-	err := nil
-	return z
+func (z Zone) Read(a *Apiaccess) (Zone, error) {
+	var err error = nil
+	return z, err
 }
 
 // Update a zone [dummy]
-func (z Zone) Update(a *Apiaccess) Zone, error {
-	err := nil
-	return z
+func (z Zone) Update(a *Apiaccess) (Zone, error) {
+	var err error = nil
+	return z, err
 }
 
 // Destroy a zone
-func (z Zone) Destroy(a *Apiaccess) Zone, error {
-	err := nil
-	return z
+func (z Zone) Destroy(a *Apiaccess) (Zone, error) {
+	var err error = nil
+	return z, err
 }
 
 // Record is the external representation of a record
@@ -78,22 +60,25 @@ type Record struct {
 }
 
 // Create a new record
-func (r Record) Create(a *Apiaccess) Record, error {
-	err := nil
+func (r Record) Create(a *Apiaccess) (Record, error) {
+	var err error = nil
 	return r, err
 }
+
 // Read a record
-func (r Record) Read(a *Apiaccess) Record, error {
-	err := nil
+func (r Record) Read(a *Apiaccess) (Record, error) {
+	var err error = nil
 	return r, err
 }
+
 // Update a record
-func (r Record) Update(a *Apiaccess) Record, error {
-	err := nil
+func (r Record) Update(a *Apiaccess) (Record, error) {
+	var err error = nil
 	return r, err
 }
+
 // Destroy a record
-func (r Record) Destroy(a *Apiaccess) Record, error {
-	err := nil
+func (r Record) Destroy(a *Apiaccess) (Record, error) {
+	var err error = nil
 	return r, err
 }

@@ -1,7 +1,4 @@
-// Copyright (c) 2020 Jan Kapellen (jan.kapellen@statravel.com), All rights reserved.
-// cloudns-go source code and usage is governed by a MIT style
-// license that can be found in the LICENSE file.
-
+// Package cloudns private api functions
 package cloudns
 
 import (
@@ -207,11 +204,11 @@ type createzone struct {
 // read should return the exact zone from the list
 func (z createzone) read() (*resty.Response, error) {
 	listzone := zonelist{
-		Authid:       z.Authid,
-		Authpassword: z.Authpassword,
-		Page:         1,
-		Hits:         10,
-		Search:       z.Domain,
+		authid:       z.authid,
+		authpassword: z.authpassword,
+		page:         1,
+		hits:         10,
+		search:       z.domain,
 	}
 	return listzone.lszone()
 }
@@ -220,6 +217,13 @@ func (z createzone) read() (*resty.Response, error) {
 func (z createzone) create() (*resty.Response, error) {
 	const path = "/dns/register.json"
 	return apireq(path, z)
+}
+
+//zone update/destroy struct, see https://www.cloudns.net/wiki/article/135/ or https://www.cloudns.net/wiki/article/49/
+type zupdate struct {
+	authid       int    `json:"auth-id"`
+	authpassword string `json:"auth-password"`
+	domain       string `json:"domain-name"`
 }
 
 // Update in this context does not make much sense, but we implement it anyway
