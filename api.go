@@ -30,6 +30,13 @@ type apierr struct {
 	Desc   string `json:"statusDescription"`
 }
 
+// for some reason cloudns returns zones in a different way then they take them
+// they also return two more fields: zone and status, I am not sure yet what to do with them :/
+type retzone struct {
+	Domain string `json:"name"`
+	Ztype  string `json:"type"`
+}
+
 // this function will check a byte array for the error message from ClouDNS
 // it's a little backwards, but it works pretty slick
 func checkapierr(d []byte) (string, bool) {
@@ -81,6 +88,17 @@ type reclist struct {
 func (r reclist) lsrec() (*resty.Response, error) {
 	const path = "/dns/records.json"
 	return apireq(path, r)
+}
+
+// returning records has the same issue as returning zones
+// they come back in a completely different format
+// in this case we currently ignore failover, status and dynamicurl_status
+type retrec struct {
+	ID     string `json:"id"`
+	Host   string `json:"host"`
+	Rtype  string `json:"type"`
+	TTL    string `json:"ttl"`
+	Record string `json:"record"`
 }
 
 //zonelist struct to lists zones, see https://www.cloudns.net/wiki/article/50/

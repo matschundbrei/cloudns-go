@@ -3,6 +3,10 @@ package cloudns
 
 import "encoding/json"
 
+import "github.com/davecgh/go-spew/spew"
+
+import "strconv"
+
 // Apiaccess ClouDNS API Credentials, see https://www.cloudns.net/wiki/article/42/
 type Apiaccess struct {
 	Authid       int    `json:"auth-id,omitempty"`
@@ -30,7 +34,15 @@ func (a Apiaccess) Listzones() ([]Zone, error) {
 	resp, err := zls.lszone()
 	var rz []Zone
 	if err == nil {
-		err2 := json.Unmarshal(resp.Body(), &rz)
+		var intrz []retzone
+		err2 := json.Unmarshal(resp.Body(), &intrz)
+		for _, zn := range intrz {
+			tmpzn := Zone{
+				Domain: zn.Domain,
+				Ztype:  zn.Ztype,
+			}
+			rz = append(rz, tmpzn)
+		}
 		return rz, err2
 	}
 	return rz, err
@@ -38,9 +50,32 @@ func (a Apiaccess) Listzones() ([]Zone, error) {
 
 // List returns all records from a zone
 func (z Zone) List(a *Apiaccess) ([]Record, error) {
-	var err error = nil
-	r := Record{}
-	ra := []Record{r}
+	var ra []Record
+	rls := reclist{
+		Authid:       a.Authid,
+		Subauthid:    a.Subauthid,
+		Authpassword: a.Authpassword,
+		Domain:       z.Domain,
+	}
+	resp, err := rls.lsrec()
+	if err == nil {
+		var ratmp map[string]retrec
+		spew.Println(resp)
+		err2 := json.Unmarshal(resp.Body(), &ratmp)
+		for _, rec := range ratmp {
+			tmpttl, _ := strconv.Atoi(rec.TTL)
+			rectmp := Record{
+				Domain: z.Domain,
+				ID:     rec.ID,
+				Rtype:  rec.Rtype,
+				Host:   rec.Host,
+				TTL:    tmpttl,
+				Record: rec.Record,
+			}
+			ra = append(ra, rectmp)
+		}
+		return ra, err2
+	}
 	return ra, err
 }
 
