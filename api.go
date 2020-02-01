@@ -38,11 +38,10 @@ type retzone struct {
 }
 
 // this function will check a byte array for the error message from ClouDNS
-// it's a little backwards, but it works pretty slick
 func checkapierr(d []byte) (string, bool) {
 	var status apierr
 	err := json.Unmarshal(d, &status)
-	if err == nil && status.Status != "Success" {
+	if err == nil && status.Status != "Success" && (apierr{}) != status {
 		return status.Desc, true
 	}
 	return "", false
@@ -268,7 +267,7 @@ func (z createzone) update() (*resty.Response, error) {
 }
 
 // Destroy removes a zone
-func (z createzone) Destroy(auth *Apiaccess) (*resty.Response, error) {
+func (z createzone) destroy() (*resty.Response, error) {
 	const path = "/dns/delete.json"
 	rm := zupdate{
 		Authid:       z.Authid,

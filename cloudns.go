@@ -1,11 +1,11 @@
 // Package cloudns public structs/functions
 package cloudns
 
-import "encoding/json"
-
-import "github.com/davecgh/go-spew/spew"
-
-import "strconv"
+import (
+	"encoding/json"
+	"errors"
+	"strconv"
+)
 
 // Apiaccess ClouDNS API Credentials, see https://www.cloudns.net/wiki/article/42/
 type Apiaccess struct {
@@ -34,6 +34,10 @@ func (a Apiaccess) Listzones() ([]Zone, error) {
 	resp, err := zls.lszone()
 	var rz []Zone
 	if err == nil {
+		errmsg, isapierr := checkapierr(resp.Body())
+		if isapierr {
+			return rz, errors.New(errmsg)
+		}
 		var intrz []retzone
 		err2 := json.Unmarshal(resp.Body(), &intrz)
 		for _, zn := range intrz {
@@ -59,8 +63,11 @@ func (z Zone) List(a *Apiaccess) ([]Record, error) {
 	}
 	resp, err := rls.lsrec()
 	if err == nil {
+		errmsg, isapierr := checkapierr(resp.Body())
+		if isapierr {
+			return ra, errors.New(errmsg)
+		}
 		var ratmp map[string]retrec
-		spew.Println(resp)
 		err2 := json.Unmarshal(resp.Body(), &ratmp)
 		for _, rec := range ratmp {
 			tmpttl, _ := strconv.Atoi(rec.TTL)
@@ -81,26 +88,77 @@ func (z Zone) List(a *Apiaccess) ([]Record, error) {
 
 // Create a new zone
 func (z Zone) Create(a *Apiaccess) (Zone, error) {
-	var err error = nil
-
+	cr := createzone{
+		Authid:       a.Authid,
+		Subauthid:    a.Subauthid,
+		Authpassword: a.Authpassword,
+		Domain:       z.Domain,
+		Ztype:        z.Ztype,
+		Ns:           z.Ns,
+	}
+	resp, err := cr.create()
+	if err == nil {
+		errmsg, isapierr := checkapierr(resp.Body())
+		if isapierr {
+			return z, errors.New(errmsg)
+		}
+	}
 	return z, err
 }
 
 // Read a zone
 func (z Zone) Read(a *Apiaccess) (Zone, error) {
-	var err error = nil
+	cr := createzone{
+		Authid:       a.Authid,
+		Subauthid:    a.Subauthid,
+		Authpassword: a.Authpassword,
+		Domain:       z.Domain,
+		Ztype:        z.Ztype,
+		Ns:           z.Ns,
+	}
+	resp, err := cr.read()
+	var zlint []retzone
+	if err == nil {
+		errmsg, isapierr := checkapierr(resp.Body())
+		if isapierr {
+			return z, errors.New(errmsg)
+		}
+		junerr := json.Unmarshal(resp.Body(), &zlint)
+		if junerr == nil {
+			var rz = Zone{
+				Domain: zlint[0].Domain,
+				Ztype:  zlint[0].Ztype,
+				Ns:     z.Ns,
+			}
+			return rz, junerr
+		}
+	}
 	return z, err
 }
 
 // Update a zone [dummy]
 func (z Zone) Update(a *Apiaccess) (Zone, error) {
-	var err error = nil
+	err := errors.New("Zone updates are currently not implemented, see https://github.com/sta-travel/cloudns-go/limitations.md")
 	return z, err
 }
 
 // Destroy a zone
 func (z Zone) Destroy(a *Apiaccess) (Zone, error) {
-	var err error = nil
+	cr := createzone{
+		Authid:       a.Authid,
+		Subauthid:    a.Subauthid,
+		Authpassword: a.Authpassword,
+		Domain:       z.Domain,
+		Ztype:        z.Ztype,
+		Ns:           z.Ns,
+	}
+	resp, err := cr.destroy()
+	if err == nil {
+		errmsg, isapierr := checkapierr(resp.Body())
+		if isapierr {
+			return z, errors.New(errmsg)
+		}
+	}
 	return z, err
 }
 
