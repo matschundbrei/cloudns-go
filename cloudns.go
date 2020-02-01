@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"strconv"
+
+	"github.com/tidwall/gjson"
 )
 
 // Apiaccess ClouDNS API Credentials, see https://www.cloudns.net/wiki/article/42/
@@ -175,24 +177,109 @@ type Record struct {
 
 // Create a new record
 func (r Record) Create(a *Apiaccess) (Record, error) {
-	var err error = nil
+	inr := createrec{
+		Authid:       a.Authid,
+		Subauthid:    a.Subauthid,
+		Authpassword: a.Authpassword,
+		Domain:       r.Domain,
+		Host:         r.Host,
+		Rtype:        r.Rtype,
+		TTL:          r.TTL,
+		Record:       r.Record,
+	}
+	resp, err := inr.create()
+	if err == nil {
+		errmsg, isapierr := checkapierr(resp.Body())
+		if isapierr {
+			return r, errors.New(errmsg)
+		}
+		newid := gjson.GetBytes(resp.Body(), "data.id")
+		r.ID = newid.String()
+	}
 	return r, err
 }
 
 // Read a record
 func (r Record) Read(a *Apiaccess) (Record, error) {
-	var err error = nil
+	lsr := reclist{
+		Authid:       a.Authid,
+		Subauthid:    a.Subauthid,
+		Authpassword: a.Authpassword,
+		Domain:       r.Domain,
+		Host:         r.Host,
+		Rtype:        r.Rtype,
+	}
+	resp, err := lsr.lsrec()
+	if err == nil {
+		errmsg, isapierr := checkapierr(resp.Body())
+		if isapierr {
+			return r, errors.New(errmsg)
+		}
+		var ratmp map[string]retrec
+		err2 := json.Unmarshal(resp.Body(), &ratmp)
+		for _, rec := range ratmp {
+			tmpttl, _ := strconv.Atoi(rec.TTL)
+			rectmp := Record{
+				Domain: r.Domain,
+				ID:     rec.ID,
+				Rtype:  rec.Rtype,
+				Host:   rec.Host,
+				TTL:    tmpttl,
+				Record: rec.Record,
+			}
+			if r.ID != "" && r.ID == rectmp.ID {
+				return rectmp, err2
+			}
+			// if we do not have an ID match, we return the last one ...
+			return rectmp, err2
+		}
+		return r, err2
+	}
 	return r, err
 }
 
 // Update a record
 func (r Record) Update(a *Apiaccess) (Record, error) {
-	var err error = nil
+	tmpid, _ := strconv.Atoi(r.ID)
+	inr := updaterec{
+		Authid:       a.Authid,
+		Subauthid:    a.Subauthid,
+		Authpassword: a.Authpassword,
+		Rid:          tmpid,
+		Domain:       r.Domain,
+		Host:         r.Host,
+		TTL:          r.TTL,
+		Record:       r.Record,
+	}
+	resp, err := inr.update()
+	if err == nil {
+		errmsg, isapierr := checkapierr(resp.Body())
+		if isapierr {
+			return r, errors.New(errmsg)
+		}
+	}
 	return r, err
 }
 
 // Destroy a record
 func (r Record) Destroy(a *Apiaccess) (Record, error) {
-	var err error = nil
+	tmpid, _ := strconv.Atoi(r.ID)
+	inr := updaterec{
+		Authid:       a.Authid,
+		Subauthid:    a.Subauthid,
+		Authpassword: a.Authpassword,
+		Rid:          tmpid,
+		Domain:       r.Domain,
+		Host:         r.Host,
+		TTL:          r.TTL,
+		Record:       r.Record,
+	}
+	resp, err := inr.destroy()
+	if err == nil {
+		errmsg, isapierr := checkapierr(resp.Body())
+		if isapierr {
+			return r, errors.New(errmsg)
+		}
+	}
 	return r, err
 }
