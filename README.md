@@ -81,15 +81,7 @@ These structs have methods, that call the API, most of them return either an Arr
 
 **Listzones()**: lists all zones (up to 100)
 
-```gofmt.Println("Destroying record")
-rd, rderr := rr.Destroy(&a)
-
-if rderr == nil {
-spew.Println(rd)
-} else {
-spew.Println(rderr)
-}
-fmt.Println("listing zones ...")
+```go
 zonelist, zonelisterr := a.Listzones()
 if zonelisterr == nil {
     spew.Println(zonelist)
