@@ -93,11 +93,12 @@ func (r reclist) lsrec() (*resty.Response, error) {
 // they come back in a completely different format
 // in this case we currently ignore failover, status and dynamicurl_status
 type retrec struct {
-	ID     string `json:"id"`
-	Host   string `json:"host"`
-	Rtype  string `json:"type"`
-	TTL    string `json:"ttl"`
-	Record string `json:"record"`
+	ID       string `json:"id"`
+	Host     string `json:"host"`
+	Rtype    string `json:"type"`
+	TTL      string `json:"ttl"`
+	Record   string `json:"record"`
+	Priority string `json:"priority,omitempty"`
 }
 
 //zonelist struct to lists zones, see https://www.cloudns.net/wiki/article/50/

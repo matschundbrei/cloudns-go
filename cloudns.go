@@ -73,13 +73,15 @@ func (z Zone) List(a *Apiaccess) ([]Record, error) {
 		err2 := json.Unmarshal(resp.Body(), &ratmp)
 		for _, rec := range ratmp {
 			tmpttl, _ := strconv.Atoi(rec.TTL)
+			tmppriority, _ := strconv.Atoi(rec.Priority)
 			rectmp := Record{
-				Domain: z.Domain,
-				ID:     rec.ID,
-				Rtype:  rec.Rtype,
-				Host:   rec.Host,
-				TTL:    tmpttl,
-				Record: rec.Record,
+				Domain:   z.Domain,
+				ID:       rec.ID,
+				Rtype:    rec.Rtype,
+				Host:     rec.Host,
+				TTL:      tmpttl,
+				Record:   rec.Record,
+				Priority: tmppriority,
 			}
 			ra = append(ra, rectmp)
 		}
@@ -167,12 +169,13 @@ func (z Zone) Destroy(a *Apiaccess) (Zone, error) {
 // Record is the external representation of a record
 // check the ...record types in api.go for details
 type Record struct {
-	ID     string `json:"id"`
-	Domain string `json:"domain-name"`
-	Host   string `json:"host"`
-	Rtype  string `json:"record-type"`
-	TTL    int    `json:"ttl"`
-	Record string `json:"record"`
+	ID       string `json:"id"`
+	Domain   string `json:"domain-name"`
+	Host     string `json:"host"`
+	Rtype    string `json:"record-type"`
+	TTL      int    `json:"ttl"`
+	Record   string `json:"record"`
+	Priority int    `json:"priority,omitempty"`
 }
 
 // Create a new record
@@ -186,6 +189,7 @@ func (r Record) Create(a *Apiaccess) (Record, error) {
 		Rtype:        r.Rtype,
 		TTL:          r.TTL,
 		Record:       r.Record,
+		Priority:     r.Priority,
 	}
 	resp, err := inr.create()
 	if err == nil {
@@ -219,13 +223,15 @@ func (r Record) Read(a *Apiaccess) (Record, error) {
 		err2 := json.Unmarshal(resp.Body(), &ratmp)
 		for _, rec := range ratmp {
 			tmpttl, _ := strconv.Atoi(rec.TTL)
+			tmppriority, _ := strconv.Atoi(rec.Priority)
 			rectmp := Record{
-				Domain: r.Domain,
-				ID:     rec.ID,
-				Rtype:  rec.Rtype,
-				Host:   rec.Host,
-				TTL:    tmpttl,
-				Record: rec.Record,
+				Domain:   r.Domain,
+				ID:       rec.ID,
+				Rtype:    rec.Rtype,
+				Host:     rec.Host,
+				TTL:      tmpttl,
+				Record:   rec.Record,
+				Priority: tmppriority,
 			}
 			if r.ID != "" && r.ID == rectmp.ID {
 				return rectmp, err2
@@ -250,6 +256,7 @@ func (r Record) Update(a *Apiaccess) (Record, error) {
 		Host:         r.Host,
 		TTL:          r.TTL,
 		Record:       r.Record,
+		Priority:     r.Priority,
 	}
 	resp, err := inr.update()
 	if err == nil {
