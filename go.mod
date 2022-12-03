@@ -1,4 +1,4 @@
-module github.com/sta-travel/cloudns-go
+module github.com/matschundbrei/cloudns-go
 
 go 1.19
 
