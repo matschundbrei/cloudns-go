@@ -1,10 +1,14 @@
 module github.com/sta-travel/cloudns-go
 
-go 1.13
+go 1.19
 
 require (
-	github.com/davecgh/go-spew v1.1.1
-	github.com/go-resty/resty/v2 v2.1.0
-	github.com/tidwall/gjson v1.4.0
-	golang.org/x/net v0.0.0-20200114155413-6afb5195e5aa // indirect
+	github.com/go-resty/resty/v2 v2.7.0
+	github.com/tidwall/gjson v1.14.4
+)
+
+require (
+	github.com/tidwall/match v1.1.1 // indirect
+	github.com/tidwall/pretty v1.2.1 // indirect
+	golang.org/x/net v0.2.0 // indirect
 )
