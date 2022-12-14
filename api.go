@@ -128,7 +128,7 @@ type createrec struct {
 	TTL            int    `json:"ttl"`
 	Host           string `json:"host"`
 	Record         string `json:"record"`
-	Priority       int    `json:"priority,omitempty"`
+	Priority       *int   `json:"priority,omitempty"`
 	Weight         int    `json:"weight,omitempty"`
 	Port           int    `json:"port,omitempty"`
 	Frame          int    `json:"frame,omitempty"`
@@ -180,7 +180,7 @@ type updaterec struct {
 	TTL            int    `json:"ttl"`
 	Host           string `json:"host"`
 	Record         string `json:"record"`
-	Priority       int    `json:"priority,omitempty"`
+	Priority       *int   `json:"priority,omitempty"`
 	Weight         int    `json:"weight,omitempty"`
 	Port           int    `json:"port,omitempty"`
 	Frame          int    `json:"frame,omitempty"`
