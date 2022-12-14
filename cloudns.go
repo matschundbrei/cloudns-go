@@ -189,7 +189,9 @@ func (r Record) Create(a *Apiaccess) (Record, error) {
 		Rtype:        r.Rtype,
 		TTL:          r.TTL,
 		Record:       r.Record,
-		Priority:     r.Priority,
+	}
+	if r.Rtype == "MX" || r.Rtype == "SRV" {
+		inr.Priority = &r.Priority
 	}
 	resp, err := inr.create()
 	if err == nil {
@@ -256,7 +258,9 @@ func (r Record) Update(a *Apiaccess) (Record, error) {
 		Host:         r.Host,
 		TTL:          r.TTL,
 		Record:       r.Record,
-		Priority:     r.Priority,
+	}
+	if r.Rtype == "MX" || r.Rtype == "SRV" {
+		inr.Priority = &r.Priority
 	}
 	resp, err := inr.update()
 	if err == nil {
