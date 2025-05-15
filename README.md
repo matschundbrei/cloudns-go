@@ -1,13 +1,16 @@
 # ClouDNS-Go
 
+## DEPRECATION NOTE
+
+Unbeknownst to me [ClouDNS](https://www.cloudns.net/) (the best DNS provider on the planet, according to me) actually bumped this code quite a bit. They included tests and everything. Also, they will very likely take much better care of it than me.
+
+Please use their [ClouDNS Go API Client](https://github.com/ClouDNS/cloudns-go) instead.
+
+Thank you!
+
+## previous readme ...
+
 This is an API-Client for the [ClouDNS HTTP API](https://www.cloudns.net/wiki/article/42/) written in [Go](https://golang.org)
-
-## Noob code warning
-
-Currently this software is  written by an [absolute noob in go](https://github.com/matschundbrei). 
-Therefore, I am very happy about any pointers toward making the code simpler, faster or more lightweight.
-
-Use at your own risk!
 
 ## Usage
 
@@ -15,7 +18,8 @@ Use at your own risk!
 
 There are three structs that you need to know:
 
- * **Apiaccess**: Holds your authentication parameters (auth-id/sub-auth-id, auth-password)
+- **Apiaccess**: Holds your authentication parameters (auth-id/sub-auth-id, auth-password)
+
 ```go
 // Apiaccess ClouDNS API Credentials, see https://www.cloudns.net/wiki/article/42/
 type Apiaccess struct {
@@ -25,7 +29,8 @@ type Apiaccess struct {
 }
 ```
 
- * **Zone**: Holds information about a zone
+- **Zone**: Holds information about a zone
+
 ```go
 // Zone is the external representation of a zone
 // check the ...zone types in api.go for details
@@ -35,9 +40,11 @@ type Zone struct {
 	Ns     []string `json:"ns,omitempty"`
 }
 ```
- * **Record**: Holds information about a record
- ```go
- // Record is the external representation of a record
+
+- **Record**: Holds information about a record
+
+```go
+// Record is the external representation of a record
 // check the ...record types in api.go for details
 type Record struct {
 	ID     string `json:"id"`
@@ -48,7 +55,6 @@ type Record struct {
 	Record string `json:"record"`
 }
 ```
- 
 
 ### Examples for the structs
 
@@ -71,12 +77,12 @@ r := cloudns.Record{
     Record: "bar",
     TTL:    3600,
 }
- ```
+```
 
 ### Methods
- 
+
 These structs have methods, that call the API, most of them return either an Array of the other ones or the updated input struct and an error.
- 
+
 #### Apiaccess Methods
 
 **Listzones()**: lists all zones (up to 100)
@@ -92,7 +98,8 @@ if zonelisterr == nil {
 
 #### Zone Methods
 
-**List(*auth)**: lists all records from a zone
+**List(\*auth)**: lists all records from a zone
+
 ```go
 fmt.Println("reading zone")
 zr, zrerr := z.Read(&a)
@@ -103,7 +110,7 @@ if zrerr == nil {
 }
 ```
 
-**Create(*auth)**: create a zone
+**Create(\*auth)**: create a zone
 
 ```go
 fmt.Println("create zone testdomain.xxx")
@@ -116,7 +123,7 @@ z = zc
 }
 ```
 
-**Destroy(*auth)**: destroy a zone
+**Destroy(\*auth)**: destroy a zone
 
 ```go
 fmt.Println("destroying zone testdomain.xxx ...")
@@ -130,7 +137,8 @@ if zderr == nil {
 
 #### Record Methods
 
-**Create(*auth)**: Create a record
+**Create(\*auth)**: Create a record
+
 ```go
 fmt.Println("creating record foo TXT bar 3600")
 rc, rcerr := r.Create(&a)
@@ -141,7 +149,8 @@ if rcerr == nil {
 }
 ```
 
-**Update(*auth)**: Update a record
+**Update(\*auth)**: Update a record
+
 ```go
 rc.Record = "foobar"
 fmt.Println("Updating record to foo TXT foobar 3600")
@@ -153,7 +162,8 @@ if ruerr == nil {
 }
 ```
 
-**Read(*auth)**: Read a record
+**Read(\*auth)**: Read a record
+
 ```go
 fmt.Println("Reading Record back")
 rr, rrerr := ru.Read(&a)
@@ -164,7 +174,8 @@ if rrerr == nil {
 }
 ```
 
-**Destroy(*auth)**: Destroy a record
+**Destroy(\*auth)**: Destroy a record
+
 ```go
 fmt.Println("Destroying record")
 rd, rderr := rr.Destroy(&a)
